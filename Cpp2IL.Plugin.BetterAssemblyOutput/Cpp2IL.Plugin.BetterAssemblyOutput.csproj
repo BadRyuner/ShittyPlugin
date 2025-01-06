@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Samboy063.Cpp2IL.Core" Version="2022.1.0-development.1197" />
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Copy SourceFiles="$(TargetPath)"
+              DestinationFolder="D:\Work\Cpp2IL-development\Cpp2IL\bin\Release\net9.0\Plugins\"
+              SkipUnchangedFiles="true" />
+    </Target>
+    
+</Project>
