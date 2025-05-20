@@ -5,7 +5,6 @@ using AsmResolver.DotNet.Signatures;
 using AsmResolver.PE.DotNet.Cil;
 using Cpp2IL.Core.ISIL;
 using Cpp2IL.Core.Model.Contexts;
-using Cpp2IL.Plugin.BetterAssemblyOutput.ExtendedIsil;
 using LibCpp2IL.BinaryStructures;
 
 namespace Cpp2IL.Plugin.BetterAssemblyOutput;
@@ -49,7 +48,7 @@ public static class Extensions
     public static IMethodDescriptor GetAsmResolverMethod(this MethodAnalysisContext context)
     {
         if (context is ConcreteGenericMethodAnalysisContext concreteGenericMethod)
-            return new MethodSpecification((IMethodDefOrRef)concreteGenericMethod.BaseMethodContext.GetAsmResolverMethod(), new GenericInstanceMethodSignature(CallingConventionAttributes.Default, concreteGenericMethod.ResolveMethodGenericParameters()
+            return new MethodSpecification((IMethodDefOrRef)concreteGenericMethod.BaseMethodContext.GetAsmResolverMethod(), new GenericInstanceMethodSignature(CallingConventionAttributes.Default, concreteGenericMethod.MethodGenericParameters
                 .Select(t => t.GetAsmResolverType())));
         
         return context.GetExtraData<MethodDefinition>("AsmResolverMethod") ?? throw new NullReferenceException("Shit happens");
@@ -59,15 +58,5 @@ public static class Extensions
     {
         public InstructionSetIndependentOperand.OperandType Type;
         public IsilOperandData Data;
-    }
-    
-    public static InstructionSetIndependentOperand ToOperand(this IsilVariable instruction)
-    {
-        var mocked = new MockOperand()
-        {
-            Type = InstructionSetIndependentOperand.OperandType.Register,
-            Data = instruction
-        };
-        return Unsafe.As<MockOperand, InstructionSetIndependentOperand>(ref mocked);
     }
 }
