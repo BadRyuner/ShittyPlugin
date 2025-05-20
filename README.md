@@ -9,6 +9,9 @@ Get some shitty il with it shitty plugin and see shit in dnspy (or ilspy). If yo
 I don't know why I made it. Ignore it.
 
 The best my shitty plugin can produce:
-![image](https://github.com/BadRyuner/ShittyPlugin/img/result.png)
+
+![image](https://raw.githubusercontent.com/BadRyuner/ShittyPlugin/refs/heads/master/img/result.png)
+
 The worst my shitty plugin can produce:
-![image](https://github.com/BadRyuner/ShittyPlugin/img/omg.png)
+
+![image](https://raw.githubusercontent.com/BadRyuner/ShittyPlugin/refs/heads/master/img/omg.png)
