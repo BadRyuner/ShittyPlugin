@@ -18,9 +18,6 @@ public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext
     
     public unsafe void Process()
     {
-        if (definition.GenericParameters?.Count > 0 || definition.DeclaringType?.GenericParameters?.Count > 0 || definition.DeclaringType!.IsAbstract)
-            return;
-        
         AlreadyProcessed = stackalloc bool[definition.CilMethodBody!.Instructions.Count];
         
         for (var i = 0; i < definition.Parameters.Count; i++)
@@ -117,8 +114,6 @@ public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext
 
         if (ctx.Type is not (Il2CppTypeEnum.IL2CPP_TYPE_CLASS or Il2CppTypeEnum.IL2CPP_TYPE_VALUETYPE))
             return null;
-
-        return null; // fuck .net and c#
         
         for (var i = 0; i < ctx.Fields.Count; i++)
         {
