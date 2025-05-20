@@ -54,7 +54,7 @@ public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext
             if (instr.IsBranch())
             {
                 var copy = LocalToContext.Clone();
-                Trace(instructions.IndexOf((CilInstruction)instr.Operand!));
+                Trace(instructions.IndexOf(((CilInstructionLabel)instr.Operand!).Instruction!));
                 LocalToContext = copy;
                 continue;
             }
