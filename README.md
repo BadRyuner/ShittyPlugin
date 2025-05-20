@@ -4,11 +4,11 @@ Just compile latest Cpp2Il, compile this shitty plugin and copy "Cpp2IL.Plugin.B
 
 And run `.\Cpp2IL.exe --output-as shitty_il --game-path "path to your silly game"`
 
-Get some shitty il with ILSpy (because plugin shitty it creates a bit of stack underflow because of which crappy C# can only display ILSpy). 
-But ILSpy gives a bunch of shit in the form of long Unsafe expressions! 
-Unluck bro( dnSpy can display some simple methods in normal way, but you can find what the fuck in this silly plugin code generates fucking stack underflow, fix it and get normal output which can be opened in dnspy.
+Get some shitty il with it shitty plugin and see shit in dnspy (or ilspy). If you want to understand something, use dnSpy. IlSpy generates a lot of Unsafe stuff where it shouldn't be. It takes up a lot of screen space!!!
 
 I don't know why I made it. Ignore it.
 
-The best my shitty plug-in can produce:
-![image](https://github.com/user-attachments/assets/fc441ea3-e86d-4829-9e55-5bce213f3fa8)
+The best my shitty plugin can produce:
+![image](https://github.com/BadRyuner/ShittyPlugin/img/result.png)
+The worst my shitty plugin can produce:
+![image](https://github.com/BadRyuner/ShittyPlugin/img/omg.png)

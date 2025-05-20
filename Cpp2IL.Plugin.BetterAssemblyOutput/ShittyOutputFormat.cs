@@ -39,6 +39,7 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
     private MethodDefinition _il2CppInternalCallResolve = null!;
     private MethodDefinition _il2CppThrow = null!;
     private MethodDefinition _il2CppObjectNew = null!;
+    private MethodDefinition _il2CppNewArraySpecific = null!;
     private MethodDefinition _il2CppRuntimeClassInit = null!;
 
     private readonly Lock _safety = new();
@@ -62,6 +63,7 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
         public IMethodDefOrRef Il2CppInternalCallResolve = null!;
         public IMethodDefOrRef Il2CppObjectNew = null!;
         public IMethodDefOrRef Il2CppThrow = null!;
+        public IMethodDefOrRef Il2CppNewArraySpecific = null!;
         public IMethodDefOrRef Il2CppRuntimeClassInit = null!;
 
         public StandAloneSignature GetCalliSignature(int count)
@@ -105,6 +107,7 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
                     Il2CppInternalCallResolve = importer.ImportMethod(originIntrinsic.Il2CppInternalCallResolve),
                     Il2CppThrow = importer.ImportMethod(originIntrinsic.Il2CppThrow),
                     Il2CppObjectNew = importer.ImportMethod(originIntrinsic.Il2CppObjectNew),
+                    Il2CppNewArraySpecific = importer.ImportMethod(originIntrinsic.Il2CppNewArraySpecific),
                     Il2CppRuntimeClassInit = importer.ImportMethod(originIntrinsic.Il2CppRuntimeClassInit),
                 };
                 return;
@@ -164,6 +167,10 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
                 new MethodDefinition("il2cpp_throw_exception", MethodAttributes.Public | MethodAttributes.Static, 
                     MethodSignature.CreateStatic(@void, ptr));
             container.Methods.Add(_il2CppThrow);
+            _il2CppNewArraySpecific =
+                new MethodDefinition("il2cpp_vm_array_new_specific", MethodAttributes.Public | MethodAttributes.Static, 
+                    MethodSignature.CreateStatic(ptr, ptr, ptr));
+            container.Methods.Add(_il2CppNewArraySpecific);
             
             _il2CppObjectNew =
                 new MethodDefinition("il2cpp_object_new", MethodAttributes.Public | MethodAttributes.Static, 
@@ -193,12 +200,12 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
                 Il2CppInternalCallResolve = _il2CppInternalCallResolve,
                 Il2CppThrow = _il2CppThrow,
                 Il2CppObjectNew = _il2CppObjectNew,
+                Il2CppNewArraySpecific = _il2CppNewArraySpecific,
                 Il2CppRuntimeClassInit = _il2CppRuntimeClassInit,
             };
             _intrinsicImports.Add(module, originIntrinsic);
         }
     }
-    
     
     protected override void FillMethodBody(MethodDefinition methodDefinition, MethodAnalysisContext methodContext)
     {
@@ -456,6 +463,15 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
                                                 myIntrinsics.Il2CppThrow);
                                             returnValue = false;
                                             break;
+                                        case "il2cpp_vm_array_new_specific":
+                                            instructions.Add(CilOpCodes.Ldloc,
+                                                GetVar((IsilRegisterOperand)instruction.Operands[1].Data));
+                                            instructions.Add(CilOpCodes.Ldloc,
+                                                GetVar((IsilRegisterOperand)instruction.Operands[2].Data));
+                                            instructions.Add(CilOpCodes.Call,
+                                                myIntrinsics.Il2CppNewArraySpecific);
+                                            returnValue = true;
+                                            break;
                                         default:
                                             body.ThrowError($"Oops, u need implement: {il2CppExport}");
                                             returnValue = true;
@@ -615,6 +631,8 @@ public class ShittyOutputFormat : AsmResolverDllOutputFormat
                         body.Instructions.Add(new CilInstruction(CilOpCodes.Ldloc, GetVar(new IsilRegisterOperand("rax"))));
                     body.Instructions.Add(new CilInstruction(CilOpCodes.Ret));
                 }
+
+                new Transformer(methodDefinition, methodContext).Process();
                 
                 CilLocalVariable GetVar(IsilRegisterOperand variable)
                 {
