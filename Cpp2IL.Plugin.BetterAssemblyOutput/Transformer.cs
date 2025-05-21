@@ -12,6 +12,8 @@ namespace Cpp2IL.Plugin.BetterAssemblyOutput;
 
 public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext context)
 {
+    private const int MaxFieldChainSize = 8;
+    
     Dictionary<Parameter, TypeAnalysisContext> ParamToContext = new(4);
     Dictionary<CilLocalVariable, TypeAnalysisContext> LocalToContext = new(16);
     Span<bool> AlreadyProcessed;
@@ -95,7 +97,7 @@ public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext
                     
                     if (set.OpCode.Code == CilCode.Stloc)
                         LocalToContext[set.GetLocalVariable(variables)] = field.FieldTypeContext;
-                    
+
                     num.ReplaceWith(CilOpCodes.Ldflda, definition.Module!.DefaultImporter.ImportField(field.GetExtraData<FieldDefinition>("AsmResolverField")!));
                     add.ReplaceWithNop();
 
@@ -107,26 +109,50 @@ public ref struct Transformer(MethodDefinition definition, MethodAnalysisContext
         }
     }
 
-    static FieldAnalysisContext? ResolveField(TypeAnalysisContext? ctx, int offset)
+    FieldAnalysisContext? ResolveField(TypeAnalysisContext? ctx, int offset)
     {
+        if (offset < 0)
+            return null;
+        
         if (ctx == null)
             return null;
 
         if (ctx.Type is not (Il2CppTypeEnum.IL2CPP_TYPE_CLASS or Il2CppTypeEnum.IL2CPP_TYPE_VALUETYPE))
             return null;
+
+        // force get from base class
+        if (ctx.BaseType != null && ctx.Fields.Count != 0 && ctx.Fields[0].Offset > offset)
+        {
+            return ResolveField(ctx.BaseType, offset);
+        }
+
+        if (ctx.Fields.Count == 0)
+            return null;
+
+        FieldAnalysisContext? field = null;
         
+        // get fields from class
         for (var i = 0; i < ctx.Fields.Count; i++)
         {
-            var field = ctx.Fields[i];
-
+            field = ctx.Fields[i];
             if (field.Offset == offset)
                 return field;
         }
 
+        // get from base class
+        if (ctx.BaseType != null)
+        {
+            field = ResolveField(ctx.BaseType, offset);
+            if (field != null)
+                return field;
+        }
+        
+        // maybe field from struct field
+        // hello stack overflow my old friend
+        // WHY YOU CANT EMIT TALI CALL LIKE A NORMAL COMPILER AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA WHYYYYYYYYYY
+        //var structField = ctx.Fields.Where(f => f.Offset < offset).MaxBy(f => f.Offset)!;
+        //return ResolveField(structField.FieldTypeContext, offset - structField.Offset);
+
         return null;
-        //return ctx
-        //    .Fields
-        //    .Where(f => f.Offset <= offset && f.FieldTypeContext.IsValueType)
-        //    .FirstOrDefault(ctx => ResolveField(ctx.FieldTypeContext, offset - ctx.Offset) != null);
     }
 }
